@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vector Tiles with Popups</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.28/"></script>
+  <style>
+    #viewDiv { height: 100vh; width: 100%; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div id="viewDiv"></div>
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/VectorTileLayer",
+      "esri/widgets/Popup"
+    ], (Map, MapView, VectorTileLayer, Popup) => {
+
+      // 1. Load Vector Tile Layer
+      const vectorLayer = new VectorTileLayer({
+        url: "https://vectortileservices7.arcgis.com/vn4hKgcJUijbCi2q/arcgis/rest/services/City_of_Detroit/VectorTileServer" // Replace with your URL
+      });
+
+      // 2. Create Map
+      const map = new Map({
+        basemap: { baseLayers: [vectorLayer] }
+      });
+
+      // 3. Set Up View
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-118, 34], // Longitude, Latitude
+        zoom: 10
+      });
+
+      // 4. Enable Popups on Click
+      view.on("click", (event) => {
+        view.hitTest(event).then((response) => {
+          if (response.results.length > 0) {
+            const feature = response.results[0].graphic;
+            view.popup.open({
+              title: "Feature Details",
+              content: `<p><strong>ID:</strong> ${feature.attributes?.id || "N/A"}</p>`,
+              location: event.mapPoint
+            });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
